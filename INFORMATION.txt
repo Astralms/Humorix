@@ -1,0 +1,38 @@
+This blueprint translates the Humorix AI Master Intelligence Document into a concrete, developer-ready technical specification.⚠️ Critical DisclaimerHumorix AI is a supportive tool only and is not a substitute for professional mental health care. This system architecture prioritizes safety, ethics, and compliance. All clinical advice or triage must be treated as a supportive guide, never a medical diagnosis.1. System Architecture: The Five-Layer FlowThe architecture is modular, meaning you can update any layer (e.g., swapping a model) without rebuilding the entire stack.LayerComponentImplementation1. InputMultimodal StreamWebSockets (for real-time mic/webcam)2. ProcessingPre-processingOpenCV (Video), Librosa (Audio), Tokenizers (Text)3. EmotionModel InferencePyTorch models running on individual modality streams4. DecisionFusion & SeverityWeighted Fusion Engine (0.45 Face, 0.30 Voice, 0.25 Text)5. OutputInterventionDVITE Policy Engine & Crisis Escalation2. Developer-Ready Python StructureOrganize your codebase to allow independent testing of models.Plaintexthumorix/
+├── app/
+│   ├── main.py             # FastAPI entry point & WebSocket handlers
+│   ├── core/
+│   │   ├── fusion.py       # Logic for combining Face/Voice/Text scores
+│   │   ├── triage.py       # DVITE policy engine (Crisis vs. Support)
+│   │   └── safety.py       # Middleware: Gatekeeper for crisis keywords
+├── models/
+│   ├── vision/             # MediaPipe/DeepFace wrappers
+│   ├── audio/              # Librosa feature extraction & speech models
+│   └── nlp/                # Transformer models for sentiment/distress
+└── data/
+    ├── schemas.py          # Pydantic models (Acuity score, User, Logs)
+    └── resources.py        # Crisis helpline contact objects (Tele-MANAS, etc.)
+3. Core Logic ImplementationA. The Safety Middleware (The Gatekeeper)This must be the very first function that touches user input before it reaches any LLM or emotion model.Python# app/core/safety.py
+CRISIS_KEYWORDS = {"kill", "die", "suicide", "end it", "hurt myself"}
+
+def run_safety_check(text_input: str) -> dict:
+    """Detects immediate danger triggers."""
+    if any(keyword in text_input.lower() for keyword in CRISIS_KEYWORDS):
+        return {
+            "status": "CRITICAL",
+            "action": "TRIGGER_EMERGENCY_ESCALATION",
+            "resources": "Tele-MANAS (14416), KIRAN (1800-599-0019)" #
+        }
+    return {"status": "SAFE", "action": "PROCEED"}
+B. The Fusion EngineUse the weighted logic provided in your document to ensure the system is more robust than a single-modality model.Python# app/core/fusion.py
+def calculate_fusion(face_score, voice_score, text_score):
+    # Weights defined in Master Document: 0.45, 0.30, 0.25
+    fused_score = (face_score * 0.45) + (voice_score * 0.30) + (text_score * 0.25)
+    
+    # Logic Override: If any modality is > 0.9 confidence in crisis, 
+    # ignore weights and prioritize the highest risk score.
+    if max(face_score, voice_score, text_score) > 0.9:
+        return max(face_score, voice_score, text_score)
+        
+    return fused_score
+4. Clinical & Wellness ImplementationThe DVITE Protocol (Operational Heart)Map your backend to this five-step loop to ensure consistency.Detect: Collect multimodal input.Validate: Reflect emotion back to the user ("I hear that you're feeling overwhelmed...").Intervene: Deploy specific module (e.g., Breathing for Anxiety, Grounding for Panic).Track: Ask for a 1-5 rating (e.g., "How is your stress level now?").Escalate: If the rating remains high, immediately suggest professional help.Wellness Integration (Satvic Layer)The Satvic module must exist as a parallel, non-clinical module.Implementation: Create a separate wellness_engine.py.Rule: When the DVITE engine returns a severity_score > 0.6 (Moderate-to-Severe), disable Satvic recommendations and prioritize clinical interventions. This prevents "wellness washing" during a crisis.5. Deployment & Security ChecklistPrivacy First: Implement "Ephemeral Processing." Biometric data (Face/Voice frames) must be discarded immediately after the fusion score is calculated. Do not store raw video/audio unless explicitly consented to by the user.Inference: Start by running your models on CPU using ONNX exports to reduce cloud costs and latency. Move to GPU-accelerated Docker containers (NVIDIA Triton) only when scaling.Compliance: You must add a "Consent Modal" in your UI that the user acknowledges before the camera/mic activates.
